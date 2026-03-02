@@ -487,28 +487,33 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
     };
 
     return (
+
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/85 backdrop-blur-2xl z-[2000] flex flex-col p-4 overflow-hidden cursor-pointer"
+            className="fixed inset-0 bg-black/90 backdrop-blur-3xl z-[2000] overflow-hidden cursor-pointer"
             onMouseMove={handleMouseMove}
             onClick={onClose}
         >
-            {/* Simplified Header for Mobile */}
-            <div className="w-full flex justify-end pb-4 pt-2 relative z-[3000]" onClick={(e) => e.stopPropagation()}>
+            {/* Header - Fixed but non-intrusive */}
+            <div className="absolute top-6 right-6 z-[3000]" onClick={(e) => e.stopPropagation()}>
                 <button
                     onClick={onClose}
-                    className="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center text-xl border border-white/20 active:scale-90 transition-transform cursor-pointer"
+                    className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl border border-white/20 active:scale-90 transition-all cursor-pointer shadow-2xl backdrop-blur-md"
                 >
                     ✕
                 </button>
             </div>
 
+            {/* Click Hint */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[3000] pointer-events-none opacity-40">
+                <p className="text-white/60 text-sm font-light tracking-[0.2em] uppercase">Click anywhere to return</p>
+            </div>
 
             {isMobile ? (
                 /* Premium Mobile Album Grid - Optimized but beautiful */
-                <div className="flex-1 overflow-y-auto custom-scrollbar-hidden px-2 pb-24">
+                <div className="w-full h-full overflow-y-auto custom-scrollbar-hidden px-4 pt-20 pb-24">
                     <motion.div
                         initial="hidden"
                         animate="visible"
@@ -518,9 +523,7 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                         className="grid grid-cols-2 gap-4"
                     >
                         {images.map((img, i) => {
-                            // Subtle random tilt for mobile scrapbook feel
                             const randomTilt = (i % 2 === 0 ? 1 : -1) * (3 + (i * 2) % 5);
-
                             return (
                                 <motion.div
                                     key={i}
@@ -532,40 +535,26 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                     className="bg-white p-2 pb-10 shadow-xl rounded-sm group relative"
                                 >
                                     <div className="aspect-[4/5] overflow-hidden rounded-sm bg-gray-50 mb-2">
-                                        <img
-                                            src={img.url}
-                                            className="w-full h-full object-cover"
-                                            loading="lazy"
-                                            alt={img.title}
-                                        />
+                                        <img src={img.url} className="w-full h-full object-cover" loading="lazy" alt={img.title} />
                                     </div>
-                                    <p className="absolute bottom-2 left-0 right-0 text-center font-handwriting text-gray-800 text-base opacity-90 truncate px-2">
-                                        {img.title}
-                                    </p>
-                                    {/* Subtle photo corner detail */}
+                                    <p className="absolute bottom-2 left-0 right-0 text-center font-handwriting text-gray-800 text-base opacity-90 truncate px-2">{img.title}</p>
                                     <div className="absolute top-0 right-0 w-8 h-8 bg-black/5 rounded-bl-full pointer-events-none" />
                                 </motion.div>
                             );
                         })}
                     </motion.div>
                 </div>
-
-
             ) : (
-                /* Original scattered parallax for Desktop - Spreading across full screen */
-                <div
-                    className="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden"
-                >
+                /* Exploded Organic Layout for Desktop - Truly Full Screen */
+                <div className="w-full h-full relative flex items-center justify-center">
                     {images.map((img, i) => {
-                        const randomRotation = (i % 2 === 0 ? 1 : -1) * (15 + (i * 8) % 20);
-                        const angle = (i / images.length) * Math.PI * 2;
+                        // Truly random scattered points to fill the whole screen organicly
+                        // We use the index to seed some variety but keep it stable-ish during re-renders
+                        const seed = i * 137.5; // Golden angle-ish
+                        const posX = (Math.cos(seed) * 35) + (i % 3 === 0 ? 25 : -25);
+                        const posY = (Math.sin(seed * 0.8) * 35) + (i % 2 === 0 ? 20 : -20);
 
-                        // Use dynamic radius based on window size with a safety margin to avoid clipping
-                        const radiusX = (window.innerWidth * 0.35) + (i % 2) * 50;
-                        const radiusY = (window.innerHeight * 0.35) + (i % 2) * 50;
-                        const initialX = Math.cos(angle) * radiusX;
-                        const initialY = Math.sin(angle) * radiusY;
-
+                        const randomRotation = (i % 2 === 0 ? 1 : -1) * (10 + (i * 7) % 25);
                         const isHovered = hoveredIndex === i;
                         const isAnythingHovered = hoveredIndex !== null;
 
@@ -575,34 +564,45 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                 onHoverStart={() => setHoveredIndex(i)}
                                 onHoverEnd={() => setHoveredIndex(null)}
                                 onClick={(e) => e.stopPropagation()}
-                                initial={{ opacity: 0, scale: 0.5 }}
+                                initial={{ opacity: 0, scale: 0.2, x: 0, y: 0 }}
                                 animate={{
-                                    opacity: isAnythingHovered && !isHovered ? 0.1 : 1,
-                                    filter: isAnythingHovered && !isHovered ? 'blur(15px) grayscale(1)' : 'blur(0px) grayscale(0)',
-                                    x: isHovered ? 0 : (initialX + mousePos.x * (1 + i * 0.15)),
-                                    y: isHovered ? 0 : (initialY + mousePos.y * (1 + i * 0.15)),
+                                    opacity: isAnythingHovered && !isHovered ? 0.05 : 1,
+                                    filter: isAnythingHovered && !isHovered ? 'blur(20px) contrast(0.5)' : 'blur(0px) contrast(1)',
+                                    x: isHovered ? 0 : `${posX}vw`,
+                                    y: isHovered ? 0 : `${posY}vh`,
                                     rotate: isHovered ? 0 : randomRotation,
-                                    scale: isHovered ? 1.8 : 1,
+                                    scale: isHovered ? 1.6 : 1,
                                     zIndex: isHovered ? 1000 : i,
                                 }}
                                 transition={{
-                                    type: "spring", stiffness: isHovered ? 120 : 80, damping: isHovered ? 20 : 15,
+                                    type: "spring",
+                                    stiffness: isHovered ? 100 : 40,
+                                    damping: isHovered ? 25 : 12,
+                                    opacity: { duration: 0.6 }
                                 }}
                                 className="absolute pointer-events-auto cursor-default"
                             >
-                                <div className={`relative overflow-hidden group transition-all duration-500 rounded-lg ${isHovered ? 'shadow-[0_40px_100px_rgba(0,0,0,0.8)] scale-110' : 'shadow-2xl'}`}>
-                                    <div className="w-52 md:w-64 h-64 md:h-80 overflow-hidden bg-gray-900">
-                                        <img src={img.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+                                {/* Floating animation for subtle life */}
+                                <motion.div
+                                    animate={!isHovered ? {
+                                        y: [0, (i % 2 === 0 ? 10 : -10), 0],
+                                        rotate: [randomRotation, randomRotation + (i % 2 === 0 ? 2 : -2), randomRotation]
+                                    } : {}}
+                                    transition={{ duration: 4 + (i % 3), repeat: Infinity, ease: "easeInOut" }}
+                                    className={`relative overflow-hidden group transition-all duration-700 rounded-xl ${isHovered ? 'shadow-[0_50px_120px_rgba(0,0,0,0.9)] scale-105' : 'shadow-2xl'}`}
+                                >
+                                    <div className="w-56 md:w-72 h-72 md:h-88 overflow-hidden bg-black/20">
+                                        <img src={img.url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
                                     </div>
-                                    {/* Hover Title Overlay */}
                                     <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
-                                        className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white text-center"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: isHovered ? 1 : 0 }}
+                                        className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8 text-white"
                                     >
-                                        <p className="font-handwriting text-xl">{img.title}</p>
+                                        <p className="font-handwriting text-3xl mb-2 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">{img.title}</p>
+                                        <div className="w-12 h-1 bg-pink-500 rounded-full" />
                                     </motion.div>
-                                </div>
+                                </motion.div>
                             </motion.div>
                         );
                     })}
