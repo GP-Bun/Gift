@@ -504,24 +504,49 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                 </button>
             </div>
 
+
             {isMobile ? (
-                /* Simple Scrollable Grid for Mobile */
-                <div className="flex-1 overflow-y-auto custom-scrollbar-hidden px-2 pb-20">
-                    <div className="grid grid-cols-2 gap-4">
-                        {images.map((img, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                className="bg-white p-2 pb-8 shadow-lg rounded-sm"
-                            >
-                                <div className="aspect-[4/5] overflow-hidden rounded-sm">
-                                    <img src={img.url} className="w-full h-full object-cover" alt="" />
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                /* Premium Mobile Album Grid - Optimized but beautiful */
+                <div className="flex-1 overflow-y-auto custom-scrollbar-hidden px-2 pb-24">
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                            visible: { transition: { staggerChildren: 0.1 } }
+                        }}
+                        className="grid grid-cols-2 gap-4"
+                    >
+                        {images.map((img, i) => {
+                            // Subtle random tilt for mobile scrapbook feel
+                            const randomTilt = (i % 2 === 0 ? 1 : -1) * (3 + (i * 2) % 5);
+
+                            return (
+                                <motion.div
+                                    key={i}
+                                    variants={{
+                                        hidden: { opacity: 0, y: 30, scale: 0.9, rotate: 0 },
+                                        visible: { opacity: 1, y: 0, scale: 1, rotate: randomTilt }
+                                    }}
+                                    whileTap={{ scale: 0.95, rotate: 0 }}
+                                    className="bg-white p-2 pb-10 shadow-xl rounded-sm group relative"
+                                >
+                                    <div className="aspect-[4/5] overflow-hidden rounded-sm bg-gray-50 mb-2">
+                                        <img
+                                            src={img.url}
+                                            className="w-full h-full object-cover"
+                                            loading="lazy"
+                                            alt={img.title}
+                                        />
+                                    </div>
+                                    <p className="absolute bottom-2 left-0 right-0 text-center font-handwriting text-gray-800 text-base opacity-90 truncate px-2">
+                                        {img.title}
+                                    </p>
+                                    {/* Subtle photo corner detail */}
+                                    <div className="absolute top-0 right-0 w-8 h-8 bg-black/5 rounded-bl-full pointer-events-none" />
+                                </motion.div>
+                            );
+                        })}
+                    </motion.div>
                 </div>
             ) : (
                 /* Original scattered parallax for Desktop */
