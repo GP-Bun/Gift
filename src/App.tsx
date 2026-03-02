@@ -556,9 +556,10 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                         const randomRotation = (i % 2 === 0 ? 1 : -1) * (15 + (i * 8) % 20);
                         const angle = (i / images.length) * Math.PI * 2;
 
-                        // Use dynamic radius based on window size for "full screen" feel
-                        const radiusX = (window.innerWidth * 0.38) + (i % 2) * 40;
-                        const radiusY = (window.innerHeight * 0.38) + (i % 2) * 40;
+
+                        // Use dynamic radius based on window size with a safety margin to avoid clipping
+                        const radiusX = (window.innerWidth * 0.32) + (i % 2) * 30;
+                        const radiusY = (window.innerHeight * 0.32) + (i % 2) * 30;
                         const initialX = Math.cos(angle) * radiusX;
                         const initialY = Math.sin(angle) * radiusY;
 
