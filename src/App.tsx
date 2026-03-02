@@ -488,38 +488,39 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
 
     return (
 
+
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-3xl z-[2000] overflow-hidden cursor-pointer"
+            className="fixed inset-0 bg-[#0a1a0f] z-[2000] overflow-hidden cursor-pointer"
             onMouseMove={handleMouseMove}
             onClick={onClose}
         >
-            {/* Header - Fixed but non-intrusive */}
+            {/* Background Sync Decor */}
+            <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
+                <FloatingHearts />
+            </div>
+
+            <div className="absolute inset-0 bg-gradient-to-tr from-black via-transparent to-green-900/40 z-0 pointer-events-none" />
+
+            {/* Header */}
             <div className="absolute top-6 right-6 z-[3000]" onClick={(e) => e.stopPropagation()}>
                 <button
                     onClick={onClose}
-                    className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl border border-white/20 active:scale-90 transition-all cursor-pointer shadow-2xl backdrop-blur-md"
+                    className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 text-white flex items-center justify-center text-xl border border-white/20 transition-all cursor-pointer backdrop-blur-xl"
                 >
                     ✕
                 </button>
             </div>
 
-            {/* Click Hint */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[3000] pointer-events-none opacity-40">
-                <p className="text-white/60 text-sm font-light tracking-[0.2em] uppercase">Click anywhere to return</p>
-            </div>
-
             {isMobile ? (
-                /* Premium Mobile Album Grid - Optimized but beautiful */
-                <div className="w-full h-full overflow-y-auto custom-scrollbar-hidden px-4 pt-20 pb-24">
+                /* Premium Mobile Album Grid */
+                <div className="w-full h-full overflow-y-auto px-4 pt-20 pb-24 relative z-10">
                     <motion.div
                         initial="hidden"
                         animate="visible"
-                        variants={{
-                            visible: { transition: { staggerChildren: 0.1 } }
-                        }}
+                        variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
                         className="grid grid-cols-2 gap-4"
                     >
                         {images.map((img, i) => {
@@ -528,33 +529,33 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                 <motion.div
                                     key={i}
                                     variants={{
-                                        hidden: { opacity: 0, y: 30, scale: 0.9, rotate: 0 },
+                                        hidden: { opacity: 0, y: 20, scale: 0.9 },
                                         visible: { opacity: 1, y: 0, scale: 1, rotate: randomTilt }
                                     }}
-                                    whileTap={{ scale: 0.95, rotate: 0 }}
+                                    whileTap={{ scale: 0.95 }}
                                     className="bg-white p-2 pb-10 shadow-xl rounded-sm group relative"
                                 >
                                     <div className="aspect-[4/5] overflow-hidden rounded-sm bg-gray-50 mb-2">
                                         <img src={img.url} className="w-full h-full object-cover" loading="lazy" alt={img.title} />
                                     </div>
                                     <p className="absolute bottom-2 left-0 right-0 text-center font-handwriting text-gray-800 text-base opacity-90 truncate px-2">{img.title}</p>
-                                    <div className="absolute top-0 right-0 w-8 h-8 bg-black/5 rounded-bl-full pointer-events-none" />
                                 </motion.div>
                             );
                         })}
                     </motion.div>
                 </div>
             ) : (
-                /* Exploded Organic Layout for Desktop - Truly Full Screen */
-                <div className="w-full h-full relative flex items-center justify-center">
+                /* Organic Scattered Layout for Desktop - Fixed Center Offset */
+                <div className="w-full h-full relative flex items-center justify-center z-10">
                     {images.map((img, i) => {
-                        // Truly random scattered points to fill the whole screen organicly
-                        // We use the index to seed some variety but keep it stable-ish during re-renders
-                        const seed = i * 137.5; // Golden angle-ish
-                        const posX = (Math.cos(seed) * 35) + (i % 3 === 0 ? 25 : -25);
-                        const posY = (Math.sin(seed * 0.8) * 35) + (i % 2 === 0 ? 20 : -20);
+                        // More constrained scatter to keep photos on screen
+                        const angle = (i / images.length) * Math.PI * 2;
+                        const dist = 28 + (i % 3) * 6; // vw/vh units
 
-                        const randomRotation = (i % 2 === 0 ? 1 : -1) * (10 + (i * 7) % 25);
+                        const posX = Math.cos(angle) * dist;
+                        const posY = Math.sin(angle) * dist;
+
+                        const randomRotation = (i % 2 === 0 ? 1 : -1) * (8 + (i * 5) % 15);
                         const isHovered = hoveredIndex === i;
                         const isAnythingHovered = hoveredIndex !== null;
 
@@ -564,43 +565,41 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                 onHoverStart={() => setHoveredIndex(i)}
                                 onHoverEnd={() => setHoveredIndex(null)}
                                 onClick={(e) => e.stopPropagation()}
-                                initial={{ opacity: 0, scale: 0.2, x: 0, y: 0 }}
+                                initial={{ opacity: 0, scale: 0.4 }}
                                 animate={{
-                                    opacity: isAnythingHovered && !isHovered ? 0.05 : 1,
-                                    filter: isAnythingHovered && !isHovered ? 'blur(20px) contrast(0.5)' : 'blur(0px) contrast(1)',
+                                    opacity: isAnythingHovered && !isHovered ? 0.15 : 1,
+                                    filter: isAnythingHovered && !isHovered ? 'blur(10px) grayscale(1)' : 'blur(0px) grayscale(0)',
                                     x: isHovered ? 0 : `${posX}vw`,
                                     y: isHovered ? 0 : `${posY}vh`,
                                     rotate: isHovered ? 0 : randomRotation,
-                                    scale: isHovered ? 1.6 : 1,
+                                    scale: isHovered ? 1.35 : 1, // Moderate bloom
                                     zIndex: isHovered ? 1000 : i,
                                 }}
                                 transition={{
                                     type: "spring",
-                                    stiffness: isHovered ? 100 : 40,
-                                    damping: isHovered ? 25 : 12,
-                                    opacity: { duration: 0.6 }
+                                    stiffness: isHovered ? 100 : 50,
+                                    damping: isHovered ? 25 : 15,
                                 }}
                                 className="absolute pointer-events-auto cursor-default"
                             >
-                                {/* Floating animation for subtle life */}
                                 <motion.div
                                     animate={!isHovered ? {
-                                        y: [0, (i % 2 === 0 ? 10 : -10), 0],
-                                        rotate: [randomRotation, randomRotation + (i % 2 === 0 ? 2 : -2), randomRotation]
+                                        y: [0, (i % 2 === 0 ? 8 : -8), 0],
+                                        rotate: [randomRotation, randomRotation + (i % 2 === 0 ? 1.5 : -1.5), randomRotation]
                                     } : {}}
-                                    transition={{ duration: 4 + (i % 3), repeat: Infinity, ease: "easeInOut" }}
-                                    className={`relative overflow-hidden group transition-all duration-700 rounded-xl ${isHovered ? 'shadow-[0_50px_120px_rgba(0,0,0,0.9)] scale-105' : 'shadow-2xl'}`}
+                                    transition={{ duration: 5 + (i % 4), repeat: Infinity, ease: "easeInOut" }}
+                                    className={`relative overflow-hidden group transition-all duration-700 rounded-lg ${isHovered ? 'shadow-[0_40px_100px_rgba(0,0,0,0.8)]' : 'shadow-2xl'}`}
                                 >
-                                    <div className="w-56 md:w-72 h-72 md:h-88 overflow-hidden bg-black/20">
+                                    <div className="w-48 md:w-60 h-60 md:h-72 overflow-hidden bg-black/20">
                                         <img src={img.url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
                                     </div>
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: isHovered ? 1 : 0 }}
-                                        className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8 text-white"
+                                        className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6 text-white"
                                     >
-                                        <p className="font-handwriting text-3xl mb-2 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">{img.title}</p>
-                                        <div className="w-12 h-1 bg-pink-500 rounded-full" />
+                                        <p className="font-handwriting text-2xl truncate">{img.title}</p>
+                                        <div className="w-8 h-1 bg-pink-500 rounded-full mt-1" />
                                     </motion.div>
                                 </motion.div>
                             </motion.div>
