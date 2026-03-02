@@ -549,17 +549,20 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                     </motion.div>
                 </div>
 
+
             ) : (
-                /* Enhanced scattered parallax for Desktop - Spreading across full screen */
-                <div className="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden">
+                /* Original scattered parallax for Desktop - Spreading across full screen */
+                <div
+                    className="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden cursor-pointer"
+                    onClick={onClose}
+                >
                     {images.map((img, i) => {
                         const randomRotation = (i % 2 === 0 ? 1 : -1) * (15 + (i * 8) % 20);
                         const angle = (i / images.length) * Math.PI * 2;
 
-
                         // Use dynamic radius based on window size with a safety margin to avoid clipping
-                        const radiusX = (window.innerWidth * 0.32) + (i % 2) * 30;
-                        const radiusY = (window.innerHeight * 0.32) + (i % 2) * 30;
+                        const radiusX = (window.innerWidth * 0.35) + (i % 2) * 50;
+                        const radiusY = (window.innerHeight * 0.35) + (i % 2) * 50;
                         const initialX = Math.cos(angle) * radiusX;
                         const initialY = Math.sin(angle) * radiusY;
 
@@ -571,10 +574,11 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                 key={i}
                                 onHoverStart={() => setHoveredIndex(i)}
                                 onHoverEnd={() => setHoveredIndex(null)}
+                                onClick={(e) => e.stopPropagation()}
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{
-                                    opacity: isAnythingHovered && !isHovered ? 0.2 : 1,
-                                    filter: isAnythingHovered && !isHovered ? 'blur(12px) grayscale(0.8)' : 'blur(0px) grayscale(0)',
+                                    opacity: isAnythingHovered && !isHovered ? 0.1 : 1,
+                                    filter: isAnythingHovered && !isHovered ? 'blur(15px) grayscale(1)' : 'blur(0px) grayscale(0)',
                                     x: isHovered ? 0 : (initialX + mousePos.x * (1 + i * 0.15)),
                                     y: isHovered ? 0 : (initialY + mousePos.y * (1 + i * 0.15)),
                                     rotate: isHovered ? 0 : randomRotation,
@@ -584,13 +588,20 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                 transition={{
                                     type: "spring", stiffness: isHovered ? 120 : 80, damping: isHovered ? 20 : 15,
                                 }}
-                                className="absolute pointer-events-auto"
+                                className="absolute pointer-events-auto cursor-default"
                             >
-                                <div className={`bg-white p-3 pb-12 shadow-2xl rounded-sm transform transition-all duration-500 ${isHovered ? 'shadow-[0_60px_150px_rgba(0,0,0,0.7)]' : 'shadow-xl'}`}>
-                                    <div className="w-44 md:w-60 h-56 md:h-72 overflow-hidden bg-gray-50 mb-2">
-                                        <img src={img.url} className="w-full h-full object-cover" alt="" />
+                                <div className={`relative overflow-hidden group transition-all duration-500 rounded-lg ${isHovered ? 'shadow-[0_40px_100px_rgba(0,0,0,0.8)] scale-110' : 'shadow-2xl'}`}>
+                                    <div className="w-52 md:w-64 h-64 md:h-80 overflow-hidden bg-gray-900">
+                                        <img src={img.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
                                     </div>
-                                    <p className="text-center font-handwriting text-gray-800 text-lg opacity-80">{img.title}</p>
+                                    {/* Hover Title Overlay */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
+                                        className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white text-center"
+                                    >
+                                        <p className="font-handwriting text-xl">{img.title}</p>
+                                    </motion.div>
                                 </div>
                             </motion.div>
                         );
