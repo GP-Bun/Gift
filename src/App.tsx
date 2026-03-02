@@ -548,15 +548,19 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                         })}
                     </motion.div>
                 </div>
+
             ) : (
-                /* Original scattered parallax for Desktop */
+                /* Enhanced scattered parallax for Desktop - Spreading across full screen */
                 <div className="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden">
                     {images.map((img, i) => {
                         const randomRotation = (i % 2 === 0 ? 1 : -1) * (15 + (i * 8) % 20);
                         const angle = (i / images.length) * Math.PI * 2;
-                        const radius = 280 + (i % 3) * 40;
-                        const initialX = Math.cos(angle) * radius;
-                        const initialY = Math.sin(angle) * radius;
+
+                        // Use dynamic radius based on window size for "full screen" feel
+                        const radiusX = (window.innerWidth * 0.38) + (i % 2) * 40;
+                        const radiusY = (window.innerHeight * 0.38) + (i % 2) * 40;
+                        const initialX = Math.cos(angle) * radiusX;
+                        const initialY = Math.sin(angle) * radiusY;
 
                         const isHovered = hoveredIndex === i;
                         const isAnythingHovered = hoveredIndex !== null;
