@@ -491,14 +491,15 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-2xl z-[2000] flex flex-col p-4 overflow-hidden"
+            className="fixed inset-0 bg-black/85 backdrop-blur-2xl z-[2000] flex flex-col p-4 overflow-hidden cursor-pointer"
             onMouseMove={handleMouseMove}
+            onClick={onClose}
         >
             {/* Simplified Header for Mobile */}
-            <div className="w-full flex justify-end pb-4 pt-2">
+            <div className="w-full flex justify-end pb-4 pt-2 relative z-[3000]" onClick={(e) => e.stopPropagation()}>
                 <button
                     onClick={onClose}
-                    className="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center text-xl border border-white/20 active:scale-90 transition-transform"
+                    className="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center text-xl border border-white/20 active:scale-90 transition-transform cursor-pointer"
                 >
                     ✕
                 </button>
@@ -553,8 +554,7 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
             ) : (
                 /* Original scattered parallax for Desktop - Spreading across full screen */
                 <div
-                    className="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden cursor-pointer"
-                    onClick={onClose}
+                    className="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden"
                 >
                     {images.map((img, i) => {
                         const randomRotation = (i % 2 === 0 ? 1 : -1) * (15 + (i * 8) % 20);
