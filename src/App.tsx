@@ -462,6 +462,7 @@ const MusicPlayer = ({ onClose }: { onClose: () => void }) => {
 };
 
 const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
+    const isMobile = window.innerWidth < 768;
     const images = [
         { url: "cá tính.jpg", title: "Cá tính" },
         { url: "cuốn hút.jpg", title: "Cuốn hút" },
@@ -477,6 +478,7 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
     const handleMouseMove = (e: React.MouseEvent) => {
+        if (isMobile) return;
         const { clientX, clientY } = e;
         setMousePos({
             x: (clientX / window.innerWidth - 0.5) * 40,
@@ -489,39 +491,43 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            className="fixed inset-0 bg-black/80 backdrop-blur-2xl z-[2000] flex flex-col p-4 overflow-hidden"
             onMouseMove={handleMouseMove}
-            className="fixed inset-0 bg-black/70 backdrop-blur-2xl z-50 flex items-center justify-center p-4 cursor-pointer overflow-hidden"
         >
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full h-full max-w-6xl relative flex flex-col cursor-default"
-            >
-                {/* Header Gallery */}
-                <div className="absolute top-8 left-8 z-50">
-                    <motion.div
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                    </motion.div>
-                </div>
-
+            {/* Simplified Header for Mobile */}
+            <div className="w-full flex justify-end pb-4 pt-2">
                 <button
                     onClick={onClose}
-                    className="absolute top-8 right-8 z-[1001] w-14 h-14 rounded-full bg-white/5 hover:bg-white text-white hover:text-black transition-all duration-500 flex items-center justify-center backdrop-blur-xl border border-white/10 text-2xl"
+                    className="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center text-xl border border-white/20 active:scale-90 transition-transform"
                 >
                     ✕
                 </button>
+            </div>
 
-                {/* Scattered Gallery Area */}
-                <div className="flex-1 relative w-full h-full flex items-center justify-center">
+            {isMobile ? (
+                /* Simple Scrollable Grid for Mobile */
+                <div className="flex-1 overflow-y-auto custom-scrollbar-hidden px-2 pb-20">
+                    <div className="grid grid-cols-2 gap-4">
+                        {images.map((img, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="bg-white p-2 pb-8 shadow-lg rounded-sm"
+                            >
+                                <div className="aspect-[4/5] overflow-hidden rounded-sm">
+                                    <img src={img.url} className="w-full h-full object-cover" alt="" />
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                /* Original scattered parallax for Desktop */
+                <div className="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden">
                     {images.map((img, i) => {
                         const randomRotation = (i % 2 === 0 ? 1 : -1) * (15 + (i * 8) % 20);
-                        const delay = i * 0.08;
-
                         const angle = (i / images.length) * Math.PI * 2;
                         const radius = 280 + (i % 3) * 40;
                         const initialX = Math.cos(angle) * radius;
@@ -535,7 +541,7 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                 key={i}
                                 onHoverStart={() => setHoveredIndex(i)}
                                 onHoverEnd={() => setHoveredIndex(null)}
-                                initial={{ opacity: 0, x: 0, y: 0, rotate: 0, scale: 0.5 }}
+                                initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{
                                     opacity: isAnythingHovered && !isHovered ? 0.2 : 1,
                                     filter: isAnythingHovered && !isHovered ? 'blur(12px) grayscale(0.8)' : 'blur(0px) grayscale(0)',
@@ -546,39 +552,25 @@ const PhotoGallery = ({ onClose }: { onClose: () => void }) => {
                                     zIndex: isHovered ? 1000 : i,
                                 }}
                                 transition={{
-                                    type: "spring",
-                                    stiffness: isHovered ? 120 : 80,
-                                    damping: isHovered ? 20 : 15,
-                                    opacity: { duration: 0.4 },
-                                    filter: { duration: 0.4 }
+                                    type: "spring", stiffness: isHovered ? 120 : 80, damping: isHovered ? 20 : 15,
                                 }}
                                 className="absolute pointer-events-auto"
                             >
                                 <div className={`bg-white p-3 pb-12 shadow-2xl rounded-sm transform transition-all duration-500 ${isHovered ? 'shadow-[0_60px_150px_rgba(0,0,0,0.7)]' : 'shadow-xl'}`}>
-                                    <div className="w-44 md:w-60 h-56 md:h-72 overflow-hidden bg-gray-50 mb-4 rounded-[1px]">
-                                        <img
-                                            src={img.url}
-                                            className="w-full h-full object-cover transition-transform duration-1000"
-                                            style={isHovered ? { transform: 'scale(1.05)' } : {}}
-                                            alt={img.title}
-                                        />
+                                    <div className="w-44 md:w-60 h-56 md:h-72 overflow-hidden bg-gray-50 mb-2">
+                                        <img src={img.url} className="w-full h-full object-cover" alt="" />
                                     </div>
-                                    <p className="text-center font-bold text-gray-800 text-lg mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>{img.title}</p>
-                                    <div className="w-10 h-1 bg-pink-100 mx-auto rounded-full" />
+                                    <p className="text-center font-handwriting text-gray-800 text-lg opacity-80">{img.title}</p>
                                 </div>
                             </motion.div>
                         );
                     })}
                 </div>
-
-                {/* Background Decor */}
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-5">
-                    <Heart size={500} fill="white" className="animate-pulse" />
-                </div>
-            </motion.div>
+            )}
         </motion.div>
     );
 };
+
 
 const DetailedFlower = ({ delay = 0, color = "#ff85a1", size = 120 }) => {
     // 8 petals for each layer
@@ -704,6 +696,8 @@ const DetailedFlower = ({ delay = 0, color = "#ff85a1", size = 120 }) => {
 };
 
 const GiftOverlay = ({ onClose }: { onClose: () => void }) => {
+    const isMobile = window.innerWidth < 768;
+
     const memoryItems = [
         { type: 'photo', url: "cá tính.jpg", text: "Cá tính" },
         { type: 'text', text: "Thương em nhiều lắm 🍀" },
@@ -723,22 +717,33 @@ const GiftOverlay = ({ onClose }: { onClose: () => void }) => {
         { type: 'text', text: "Hẹn ước mai sau 🌹" },
     ];
 
-    const flowerConfig = [
-        { x: '10%', y: '15%', size: 140, color: '#ff85a1', delay: 0.2 },
-        { x: '85%', y: '20%', size: 120, color: '#f06292', delay: 0.4 },
-        { x: '15%', y: '75%', size: 160, color: '#ec407a', delay: 0.6 },
-        { x: '80%', y: '80%', size: 130, color: '#f48fb1', delay: 0.8 },
-        { x: '50%', y: '10%', size: 100, color: '#ffb2c1', delay: 1.0 },
-        { x: '45%', y: '85%', size: 150, color: '#ff80ab', delay: 1.2 },
-        { x: '5%', y: '45%', size: 110, color: '#f06292', delay: 1.4 },
-        { x: '90%', y: '55%', size: 140, color: '#ff4081', delay: 1.6 },
-        { x: '30%', y: '25%', size: 90, color: '#f8bbd0', delay: 1.8 },
-        { x: '70%', y: '35%', size: 110, color: '#f48fb1', delay: 2.0 },
-        { x: '25%', y: '55%', size: 85, color: '#ff85a1', delay: 2.2 },
-        { x: '75%', y: '65%', size: 120, color: '#f06292', delay: 2.4 },
-        { x: '40%', y: '50%', size: 100, color: '#ec407a', delay: 2.6 },
-        { x: '60%', y: '15%', size: 130, color: '#f8bbd0', delay: 2.8 },
-    ];
+    const starCount = isMobile ? 30 : 100;
+    const fireflyCount = isMobile ? 8 : 25;
+    const petalCount = isMobile ? 12 : 30;
+
+    const flowerConfig = isMobile
+        ? [
+            { x: '15%', y: '20%', size: 100, color: '#ff85a1', delay: 0.2 },
+            { x: '85%', y: '25%', size: 90, color: '#f06292', delay: 0.4 },
+            { x: '20%', y: '80%', size: 110, color: '#ec407a', delay: 0.6 },
+            { x: '80%', y: '75%', size: 95, color: '#f48fb1', delay: 0.8 },
+        ]
+        : [
+            { x: '10%', y: '15%', size: 140, color: '#ff85a1', delay: 0.2 },
+            { x: '85%', y: '20%', size: 120, color: '#f06292', delay: 0.4 },
+            { x: '15%', y: '75%', size: 160, color: '#ec407a', delay: 0.6 },
+            { x: '80%', y: '80%', size: 130, color: '#f48fb1', delay: 0.8 },
+            { x: '50%', y: '10%', size: 100, color: '#ffb2c1', delay: 1.0 },
+            { x: '45%', y: '85%', size: 150, color: '#ff80ab', delay: 1.2 },
+            { x: '5%', y: '45%', size: 110, color: '#f06292', delay: 1.4 },
+            { x: '90%', y: '55%', size: 140, color: '#ff4081', delay: 1.6 },
+            { x: '30%', y: '25%', size: 90, color: '#f8bbd0', delay: 1.8 },
+            { x: '70%', y: '35%', size: 110, color: '#f48fb1', delay: 2.0 },
+            { x: '25%', y: '55%', size: 85, color: '#ff85a1', delay: 2.2 },
+            { x: '75%', y: '65%', size: 120, color: '#f06292', delay: 2.4 },
+            { x: '40%', y: '50%', size: 100, color: '#ec407a', delay: 2.6 },
+            { x: '60%', y: '15%', size: 130, color: '#f8bbd0', delay: 2.8 },
+        ];
 
     return (
         <motion.div
@@ -749,12 +754,12 @@ const GiftOverlay = ({ onClose }: { onClose: () => void }) => {
         >
             {/* Starry Night Sky */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                {[...Array(120)].map((_, i) => (
+                {[...Array(starCount)].map((_, i) => (
                     <motion.div
                         key={i}
-                        animate={{ opacity: [0.1, 0.9, 0.1], scale: [0.8, 1.2, 0.8] }}
-                        transition={{ duration: 2 + Math.random() * 5, repeat: Infinity, delay: Math.random() * 5 }}
-                        className="absolute w-1 h-1 bg-white rounded-full"
+                        animate={{ opacity: [0.1, 0.7, 0.1] }}
+                        transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, delay: Math.random() * 5 }}
+                        className="absolute w-0.5 h-0.5 bg-white rounded-full"
                         style={{ top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%` }}
                     />
                 ))}
@@ -762,16 +767,16 @@ const GiftOverlay = ({ onClose }: { onClose: () => void }) => {
 
             {/* Fireflies effect */}
             <div className="absolute inset-0 z-[4] pointer-events-none">
-                {[...Array(30)].map((_, i) => (
+                {[...Array(fireflyCount)].map((_, i) => (
                     <motion.div
                         key={`firefly-${i}`}
                         animate={{
                             x: [Math.random() * 100 + 'vw', Math.random() * 100 + 'vw'],
                             y: [Math.random() * 100 + 'vh', Math.random() * 100 + 'vh'],
-                            opacity: [0, 0.8, 0],
+                            opacity: [0, 0.6, 0],
                         }}
-                        transition={{ duration: 15 + Math.random() * 20, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute w-1.5 h-1.5 bg-yellow-200 rounded-full blur-[1px] shadow-[0_0_8px_#fff]"
+                        transition={{ duration: 12 + Math.random() * 15, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute w-1 h-1 bg-yellow-100 rounded-full shadow-[0_0_5px_#fff]"
                     />
                 ))}
             </div>
@@ -826,12 +831,12 @@ const GiftOverlay = ({ onClose }: { onClose: () => void }) => {
 
             {/* Falling Petals */}
             <div className="absolute inset-0 z-[6] pointer-events-none overflow-hidden">
-                {[...Array(40)].map((_, i) => (
+                {[...Array(petalCount)].map((_, i) => (
                     <motion.div
                         key={`petal-${i}`}
-                        animate={{ y: ['-10vh', '110vh'], x: [`${Math.random() * 100}vw`, `${Math.random() * 100}vw`], rotate: 720, opacity: [0, 1, 1, 0] }}
-                        transition={{ duration: 15 + Math.random() * 15, repeat: Infinity, delay: Math.random() * 10, ease: "linear" }}
-                        className="absolute w-4 h-6 bg-pink-300/20 rounded-full blur-[1px]"
+                        animate={{ y: ['-10vh', '110vh'], x: [`${Math.random() * 100}vw`, `${Math.random() * 100}vw`], rotate: 360, opacity: [0, 0.8, 0.8, 0] }}
+                        transition={{ duration: 10 + Math.random() * 15, repeat: Infinity, delay: Math.random() * 10, ease: "linear" }}
+                        className="absolute w-3 h-5 bg-pink-300/30 rounded-full blur-[0.5px]"
                     />
                 ))}
             </div>
